@@ -1,0 +1,61 @@
+<idea-plugin>
+    <id>uk.steers.nunjucks</id>
+    <name>Nunjucks</name>
+    <vendor>Nathaniel Steers</vendor>
+    <description><![CDATA[
+    Nunjucks template language support: parsing, highlighting, formatting, navigation, completion,
+    refactoring and inspections, with HTML (or any templateable language) as the template data language.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.xml</depends>
+    <depends>com.intellij.modules.json</depends>
+    <depends>intellij.structureView.plugin</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <fileType name="Nunjucks" implementationClass="uk.steers.nunjucks.file.NunjucksFileType" fieldName="INSTANCE"
+                  language="Nunjucks" extensions="njk;nunjucks;nj"/>
+        <lang.parserDefinition language="Nunjucks" implementationClass="uk.steers.nunjucks.NunjucksParserDefinition"/>
+        <lang.fileViewProviderFactory language="Nunjucks" implementationClass="uk.steers.nunjucks.file.NunjucksFileViewProviderFactory"/>
+        <lang.syntaxHighlighterFactory language="Nunjucks" implementationClass="uk.steers.nunjucks.highlighting.NunjucksSyntaxHighlighterFactory"/>
+        <editorHighlighterProvider filetype="Nunjucks" implementationClass="uk.steers.nunjucks.highlighting.NunjucksEditorHighlighterProvider"/>
+        <colorSettingsPage implementation="uk.steers.nunjucks.highlighting.NunjucksColourSettingsPage"/>
+        <lang.elementManipulator forClass="uk.steers.nunjucks.psi.NjkLiteralExpr" implementationClass="uk.steers.nunjucks.reference.NunjucksLiteralManipulator"/>
+        <annotator language="Nunjucks" implementationClass="uk.steers.nunjucks.editor.NunjucksAnnotator"/>
+        <highlightErrorFilter implementation="uk.steers.nunjucks.editor.NunjucksErrorFilter"/>
+        <lang.braceMatcher language="Nunjucks" implementationClass="uk.steers.nunjucks.editor.NunjucksBraceMatcher"/>
+        <lang.commenter language="Nunjucks" implementationClass="uk.steers.nunjucks.editor.NunjucksCommenter"/>
+        <multiLangCommenter implementation="uk.steers.nunjucks.editor.NunjucksMultipleLangCommentProvider"/>
+        <lang.quoteHandler language="Nunjucks" implementationClass="uk.steers.nunjucks.editor.NunjucksQuoteHandler"/>
+        <fileIndentOptionsProvider implementation="uk.steers.nunjucks.formatter.NunjucksFileIndentOptionsProvider"/>
+        <lang.formatter language="Nunjucks" implementationClass="uk.steers.nunjucks.formatter.NunjucksFormattingModelBuilder"/>
+        <completion.contributor language="Nunjucks" implementationClass="uk.steers.nunjucks.completion.NunjucksCompletionContributor"/>
+        <lang.foldingBuilder language="Nunjucks" implementationClass="uk.steers.nunjucks.editor.NunjucksFoldingBuilder"/>
+        <codeBlockSupportHandler language="Nunjucks" implementationClass="uk.steers.nunjucks.editor.NunjucksCodeBlockSupportHandler"/>
+        <typedHandler implementation="uk.steers.nunjucks.editor.NunjucksTypedHandler"/>
+        <lang.psiStructureViewFactory language="Nunjucks" implementationClass="uk.steers.nunjucks.structure.NunjucksStructureViewFactory"/>
+        <liveTemplateContext contextId="NUNJUCKS" implementation="uk.steers.nunjucks.editor.NunjucksTemplateContextType"/>
+        <defaultLiveTemplates file="/liveTemplates/Nunjucks.xml"/>
+        <lang.findUsagesProvider language="Nunjucks" implementationClass="uk.steers.nunjucks.navigation.NunjucksFindUsagesProvider"/>
+        <lang.namesValidator language="Nunjucks" implementationClass="uk.steers.nunjucks.navigation.NunjucksNamesValidator"/>
+        <lang.refactoringSupport language="Nunjucks" implementationClass="uk.steers.nunjucks.navigation.NunjucksRefactoringSupportProvider"/>
+        <lang.documentationProvider language="Nunjucks" implementationClass="uk.steers.nunjucks.navigation.NunjucksDocumentationProvider"/>
+        <codeInsight.parameterInfo language="Nunjucks" implementationClass="uk.steers.nunjucks.navigation.NunjucksParameterInfoHandler"/>
+        <codeInsight.lineMarkerProvider language="Nunjucks" implementationClass="uk.steers.nunjucks.navigation.NunjucksBlockLineMarkerProvider"/>
+        <gotoDeclarationHandler implementation="uk.steers.nunjucks.navigation.NunjucksGotoBlockHandler"/>
+        <localInspection language="Nunjucks" shortName="NunjucksUnknownFilter" displayName="Unknown filter" groupName="Nunjucks" enabledByDefault="true" level="WARNING" implementationClass="uk.steers.nunjucks.inspections.NunjucksUnknownFilterInspection"/>
+        <localInspection language="Nunjucks" shortName="NunjucksUnknownTest" displayName="Unknown test" groupName="Nunjucks" enabledByDefault="true" level="WARNING" implementationClass="uk.steers.nunjucks.inspections.NunjucksUnknownTestInspection"/>
+        <localInspection language="Nunjucks" shortName="NunjucksUnresolvedTemplate" displayName="Unresolved template" groupName="Nunjucks" enabledByDefault="true" level="ERROR" implementationClass="uk.steers.nunjucks.inspections.NunjucksUnresolvedTemplateInspection"/>
+        <localInspection language="Nunjucks" shortName="NunjucksUnresolvedMacro" displayName="Unresolved imported macro" groupName="Nunjucks" enabledByDefault="true" level="ERROR" implementationClass="uk.steers.nunjucks.inspections.NunjucksUnresolvedMacroInspection"/>
+        <localInspection language="Nunjucks" shortName="NunjucksUnusedImport" displayName="Unused import" groupName="Nunjucks" enabledByDefault="true" level="WARNING" implementationClass="uk.steers.nunjucks.inspections.NunjucksUnusedImportInspection"/>
+        <localInspection language="Nunjucks" shortName="NunjucksUnusedVariable" displayName="Unused variable" groupName="Nunjucks" enabledByDefault="true" level="WARNING" implementationClass="uk.steers.nunjucks.inspections.NunjucksUnusedVariableInspection"/>
+        <localInspection language="Nunjucks" shortName="NunjucksMismatchedEndTag" displayName="Mismatched end tag" groupName="Nunjucks" enabledByDefault="true" level="ERROR" implementationClass="uk.steers.nunjucks.inspections.NunjucksMismatchedEndTagInspection"/>
+        <localInspection language="Nunjucks" shortName="NunjucksUnknownKeywordArgument" displayName="Unknown macro argument" groupName="Nunjucks" enabledByDefault="true" level="WARNING" implementationClass="uk.steers.nunjucks.inspections.NunjucksUnknownKeywordArgumentInspection"/>
+        <localInspection language="Nunjucks" shortName="NunjucksMacroOptions" displayName="Unknown or deprecated component option" groupName="Nunjucks" enabledByDefault="true" level="WEAK WARNING" implementationClass="uk.steers.nunjucks.inspections.NunjucksMacroOptionsInspection"/>
+        <localInspection language="Nunjucks" shortName="NunjucksMismatchedBracket" displayName="Mismatched bracket" groupName="Nunjucks" enabledByDefault="true" level="WARNING" implementationClass="uk.steers.nunjucks.inspections.NunjucksMismatchedBracketInspection"/>
+        <localInspection language="Nunjucks" shortName="NunjucksDuplicateBlock" displayName="Duplicate block" groupName="Nunjucks" enabledByDefault="true" level="ERROR" implementationClass="uk.steers.nunjucks.inspections.NunjucksDuplicateBlockInspection"/>
+        <fileTypeOverrider implementation="uk.steers.nunjucks.file.NunjucksHtmlFileTypeOverrider"/>
+        <projectConfigurable parentId="language" instance="uk.steers.nunjucks.settings.NunjucksConfigurable"
+                             id="uk.steers.nunjucks.settings" displayName="Nunjucks" nonDefaultProject="true"/>
+    </extensions>
+</idea-plugin>

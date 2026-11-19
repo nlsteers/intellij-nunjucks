@@ -1,0 +1,12 @@
+{% extends "layouts/base.njk" %}
+{% extends parentTemplate %}
+{% include "partials/header.njk" %}
+{% include "missing.njk" ignore missing %}
+{% import "forms.njk" as forms %}
+{% import "forms.njk" as forms with context %}
+{% from "forms.njk" import input, label as lbl %}
+{% from "forms.njk" import input without context %}
+{% block content %}
+  {{ super() }}
+  {% block inner %}inner{% endblock inner %}
+{% endblock %}

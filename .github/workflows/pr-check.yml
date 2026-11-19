@@ -1,0 +1,15 @@
+name: PR check
+
+on: pull_request
+
+permissions: {}
+
+jobs:
+  build-and-verify:
+    name: Build and verify
+    permissions:
+      contents: read
+    concurrency:
+      group: build-and-verify-${{ github.event.pull_request.number }}
+      cancel-in-progress: true
+    uses: ./.github/workflows/build-and-verify.yml

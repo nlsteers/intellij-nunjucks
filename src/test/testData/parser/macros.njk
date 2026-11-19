@@ -1,0 +1,8 @@
+{% macro field(name, value="", type="text") %}
+  <input type="{{ type }}" name="{{ name }}" value="{{ value | escape }}" />
+{% endmacro %}
+{{ field("user") }}
+{{ field("pass", type="password") }}
+{% call field("x") %}body{% endcall %}
+{% call(user) list(users) %}<li>{{ user.name }}</li>{% endcall %}
+{{ caller() }}

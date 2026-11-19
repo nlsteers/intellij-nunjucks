@@ -1,0 +1,110 @@
+<templateSet group="Nunjucks">
+  <template name="if" value="{% if $EXPR$ %}&#10;  $END$&#10;{% endif %}" description="if block" toReformat="false" toShortenFQNames="false">
+    <variable name="EXPR" expression="" defaultValue="&quot;expr&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NUNJUCKS" value="true"/>
+    </context>
+  </template>
+  <template name="ife" value="{% if $EXPR$ %}&#10;  $THEN$&#10;{% else %}&#10;  $END$&#10;{% endif %}" description="if / else block" toReformat="false" toShortenFQNames="false">
+    <variable name="EXPR" expression="" defaultValue="&quot;expr&quot;" alwaysStopAt="true"/>
+    <variable name="THEN" expression="" defaultValue="&quot;then&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NUNJUCKS" value="true"/>
+    </context>
+  </template>
+  <template name="for" value="{% for $ITEM$ in $SEQUENCE$ %}&#10;  $END$&#10;{% endfor %}" description="for loop" toReformat="false" toShortenFQNames="false">
+    <variable name="ITEM" expression="" defaultValue="&quot;item&quot;" alwaysStopAt="true"/>
+    <variable name="SEQUENCE" expression="" defaultValue="&quot;sequence&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NUNJUCKS" value="true"/>
+    </context>
+  </template>
+  <template name="forkv" value="{% for $KEY$, $VALUE$ in $OBJECT$ %}&#10;  $END$&#10;{% endfor %}" description="for loop over an object" toReformat="false" toShortenFQNames="false">
+    <variable name="KEY" expression="" defaultValue="&quot;key&quot;" alwaysStopAt="true"/>
+    <variable name="VALUE" expression="" defaultValue="&quot;value&quot;" alwaysStopAt="true"/>
+    <variable name="OBJECT" expression="" defaultValue="&quot;object&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NUNJUCKS" value="true"/>
+    </context>
+  </template>
+  <template name="set" value="{% set $NAME$ = $VALUE$ %}$END$" description="set a variable" toReformat="false" toShortenFQNames="false">
+    <variable name="NAME" expression="" defaultValue="&quot;name&quot;" alwaysStopAt="true"/>
+    <variable name="VALUE" expression="" defaultValue="&quot;value&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NUNJUCKS" value="true"/>
+    </context>
+  </template>
+  <template name="setb" value="{% set $NAME$ %}&#10;  $END$&#10;{% endset %}" description="capture a block into a variable" toReformat="false" toShortenFQNames="false">
+    <variable name="NAME" expression="" defaultValue="&quot;name&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NUNJUCKS" value="true"/>
+    </context>
+  </template>
+  <template name="block" value="{% block $NAME$ %}&#10;  $END$&#10;{% endblock %}" description="block" toReformat="false" toShortenFQNames="false">
+    <variable name="NAME" expression="" defaultValue="&quot;name&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NUNJUCKS" value="true"/>
+    </context>
+  </template>
+  <template name="macro" value="{% macro $NAME$($ARGS$) %}&#10;  $END$&#10;{% endmacro %}" description="macro" toReformat="false" toShortenFQNames="false">
+    <variable name="NAME" expression="" defaultValue="&quot;name&quot;" alwaysStopAt="true"/>
+    <variable name="ARGS" expression="" defaultValue="&quot;args&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NUNJUCKS" value="true"/>
+    </context>
+  </template>
+  <template name="call" value="{% call $MACRO$($ARGS$) %}&#10;  $END$&#10;{% endcall %}" description="call a macro with a body" toReformat="false" toShortenFQNames="false">
+    <variable name="MACRO" expression="" defaultValue="&quot;macro&quot;" alwaysStopAt="true"/>
+    <variable name="ARGS" expression="" defaultValue="&quot;args&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NUNJUCKS" value="true"/>
+    </context>
+  </template>
+  <template name="filter" value="{% filter $FILTER$ %}&#10;  $END$&#10;{% endfilter %}" description="filter block" toReformat="false" toShortenFQNames="false">
+    <variable name="FILTER" expression="" defaultValue="&quot;filter&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NUNJUCKS" value="true"/>
+    </context>
+  </template>
+  <template name="extends" value="{% extends &quot;$TEMPLATE$&quot; %}$END$" description="extend a template" toReformat="false" toShortenFQNames="false">
+    <variable name="TEMPLATE" expression="" defaultValue="&quot;template&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NUNJUCKS" value="true"/>
+    </context>
+  </template>
+  <template name="include" value="{% include &quot;$TEMPLATE$&quot; %}$END$" description="include a template" toReformat="false" toShortenFQNames="false">
+    <variable name="TEMPLATE" expression="" defaultValue="&quot;template&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NUNJUCKS" value="true"/>
+    </context>
+  </template>
+  <template name="import" value="{% import &quot;$TEMPLATE$&quot; as $NAME$ %}$END$" description="import a template as a namespace" toReformat="false" toShortenFQNames="false">
+    <variable name="TEMPLATE" expression="" defaultValue="&quot;template&quot;" alwaysStopAt="true"/>
+    <variable name="NAME" expression="" defaultValue="&quot;name&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NUNJUCKS" value="true"/>
+    </context>
+  </template>
+  <template name="from" value="{% from &quot;$TEMPLATE$&quot; import $NAMES$ %}$END$" description="import macros from a template" toReformat="false" toShortenFQNames="false">
+    <variable name="TEMPLATE" expression="" defaultValue="&quot;template&quot;" alwaysStopAt="true"/>
+    <variable name="NAMES" expression="" defaultValue="&quot;names&quot;" alwaysStopAt="true"/>
+    <context>
+      <option name="NUNJUCKS" value="true"/>
+    </context>
+  </template>
+  <template name="raw" value="{% raw %}$SELECTION$$END${% endraw %}" description="raw block (not processed)" toReformat="false" toShortenFQNames="false">
+    <context>
+      <option name="NUNJUCKS" value="true"/>
+    </context>
+  </template>
+  <template name="cm" value="{# $END$ #}" description="comment" toReformat="false" toShortenFQNames="false">
+    <context>
+      <option name="NUNJUCKS" value="true"/>
+    </context>
+  </template>
+  <template name="out" value="{{ $END$ }}" description="output an expression" toReformat="false" toShortenFQNames="false">
+    <context>
+      <option name="NUNJUCKS" value="true"/>
+    </context>
+  </template>
+</templateSet>

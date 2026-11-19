@@ -1,0 +1,10 @@
+{% raw %}
+  {{ this is not parsed }} {% neither is this %}
+{% endraw %}
+{% verbatim %}{{ untouched }}{% endverbatim %}
+{%- raw -%}{{ x }}{%- endraw -%}
+{# a comment with {{ tags }} and {% blocks %} #}
+{#
+  multi-line
+  # comment
+#}

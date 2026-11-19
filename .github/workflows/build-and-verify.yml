@@ -1,0 +1,91 @@
+name: Build and verify
+
+on:
+  workflow_call:
+
+permissions: {}
+
+jobs:
+  test:
+    name: Test and build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          java-version-file: '.sdkmanrc'
+          distribution: corretto
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+
+      - name: Run tests and build plugin
+        run: ./gradlew test buildPlugin
+
+      - name: Upload test reports
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: test-reports
+          path: build/reports/tests/
+          retention-days: 7
+
+      - name: Upload plugin
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: plugin
+          path: build/distributions/*.zip
+          retention-days: 7
+
+  verify:
+    name: Verify plugin compatibility
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up JDK
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          java-version-file: '.sdkmanrc'
+          distribution: corretto
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+
+      - name: Restore Plugin Verifier cache
+        id: restore-verifier-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.pluginVerifier
+          key: plugin-verifier-${{ hashFiles('gradle.properties', 'build.gradle.kts') }}
+          restore-keys: plugin-verifier-
+
+      - name: Verify plugin
+        run: ./gradlew verifyPlugin
+
+      - name: Upload verifier report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: plugin-verifier-report
+          path: build/reports/pluginVerifier/
+          retention-days: 7
+
+      - name: Save Plugin Verifier cache
+        if: ${{ github.ref == 'refs/heads/main' && steps.restore-verifier-cache.outputs.cache-hit != 'true' }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.pluginVerifier
+          key: ${{ steps.restore-verifier-cache.outputs.cache-primary-key }}

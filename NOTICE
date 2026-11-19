@@ -1,0 +1,24 @@
+Nunjucks for IntelliJ
+Copyright (c) 2026 Nathaniel Steers
+
+This project is licensed under the MIT License (see LICENSE), except for the
+portions listed below.
+
+--------------------------------------------------------------------------------
+
+Portions of the following files are derived from the Handlebars/Mustache plugin
+in JetBrains/intellij-plugins (https://github.com/JetBrains/intellij-plugins,
+directory handlebars/), Copyright 2000-2025 JetBrains s.r.o. and contributors,
+licensed under the Apache License, Version 2.0 (see LICENSE-APACHE-2.0.txt).
+They have been translated to Kotlin and modified for Nunjucks:
+
+  src/main/kotlin/uk/steers/nunjucks/formatter/NunjucksFormattingModelBuilder.kt
+      from com.dmarcotte.handlebars.format.HbFormattingModelBuilder
+  src/main/kotlin/uk/steers/nunjucks/formatter/NunjucksFileIndentOptionsProvider.kt
+      from com.dmarcotte.handlebars.format.HbFileIndentOptionsProvider
+  src/main/kotlin/uk/steers/nunjucks/file/NunjucksFileViewProvider.kt
+      from com.dmarcotte.handlebars.file.HbFileViewProvider
+  src/main/kotlin/uk/steers/nunjucks/file/NunjucksTemplateData.kt
+      from com.dmarcotte.handlebars.file.HbFileViewProvider
+
+Those portions remain subject to the Apache License, Version 2.0.

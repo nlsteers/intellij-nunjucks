@@ -1,0 +1,321 @@
+{
+  parserClass="uk.steers.nunjucks.parser.NunjucksParser"
+  parserUtilClass="uk.steers.nunjucks.parser.NunjucksParserUtil"
+
+  extends="uk.steers.nunjucks.psi.impl.NunjucksPsiElementImpl"
+
+  psiClassPrefix="Njk"
+  psiImplClassSuffix="Impl"
+  psiPackage="uk.steers.nunjucks.psi"
+  psiImplPackage="uk.steers.nunjucks.psi.impl"
+
+  elementTypeHolderClass="uk.steers.nunjucks.psi.NunjucksTypes"
+  elementTypeClass="uk.steers.nunjucks.psi.NunjucksElementType"
+  tokenTypeClass="uk.steers.nunjucks.psi.NunjucksTokenType"
+
+  tokens=[
+    TEMPLATE_TEXT="TEMPLATE_TEXT"
+    COMMENT="COMMENT"
+    BLOCK_START="{%"
+    BLOCK_END="%}"
+    VAR_START="{{"
+    VAR_END="}}"
+
+    IDENTIFIER="IDENTIFIER"
+    TAG_NAME="TAG_NAME"
+    STRING="STRING"
+    NUMBER="NUMBER"
+    REGEX="REGEX"
+
+    IF="if"
+    ELIF="elif"
+    ELSEIF="elseif"
+    ELSE="else"
+    ENDIF="endif"
+    IFASYNC="ifAsync"
+    FOR="for"
+    ENDFOR="endfor"
+    ASYNCEACH="asyncEach"
+    ENDEACH="endeach"
+    ASYNCALL="asyncAll"
+    ENDALL="endall"
+    SET="set"
+    ENDSET="endset"
+    MACRO="macro"
+    ENDMACRO="endmacro"
+    CALL="call"
+    ENDCALL="endcall"
+    FILTER="filter"
+    ENDFILTER="endfilter"
+    BLOCK="block"
+    ENDBLOCK="endblock"
+    EXTENDS="extends"
+    INCLUDE="include"
+    IMPORT="import"
+    FROM="from"
+    RAW="raw"
+    ENDRAW="endraw"
+    VERBATIM="verbatim"
+    ENDVERBATIM="endverbatim"
+
+    AND="and"
+    OR="or"
+    NOT="not"
+    IN="in"
+    IS="is"
+    TRUE="true"
+    FALSE="false"
+    NONE="none"
+    NULL="null"
+
+    // soft keywords: lexed as IDENTIFIER and remapped by the parser
+    AS="as"
+    WITH="with"
+    WITHOUT="without"
+    CONTEXT="context"
+    IGNORE="ignore"
+    MISSING="missing"
+
+    EQEQEQ="==="
+    NEQEQ="!=="
+    EQEQ="=="
+    NEQ="!="
+    LE="<="
+    GE=">="
+    LT="<"
+    GT=">"
+    POW="**"
+    FLOORDIV="//"
+    PLUS="+"
+    MINUS="-"
+    MUL="*"
+    DIV="/"
+    MOD="%"
+    TILDE="~"
+    ASSIGN="="
+    PIPE="|"
+    DOT="."
+    COMMA=","
+    COLON=":"
+    LPAREN="("
+    RPAREN=")"
+    LBRACKET="["
+    RBRACKET="]"
+    LBRACE="{"
+    RBRACE="}"
+  ]
+
+  extends(".*_expr")=expression
+  implements(".*_statement")="uk.steers.nunjucks.psi.NjkStatement"
+}
+
+template ::= root_item*
+
+private root_item ::= item | orphan_tag | <<unexpectedToken>>
+
+private item ::= TEMPLATE_TEXT | COMMENT | output | statement
+
+private statement ::= if_statement
+  | for_statement
+  | set_statement
+  | macro_statement
+  | call_statement
+  | filter_statement
+  | block_statement
+  | raw_statement
+  | extends_tag
+  | include_tag
+  | import_tag
+  | from_import_tag
+  | custom_tag
+
+body ::= item*
+
+private tag_recover ::= !(BLOCK_END | BLOCK_START | VAR_START | VAR_END | TEMPLATE_TEXT | COMMENT)
+
+output ::= VAR_START output_content VAR_END {pin=1}
+private output_content ::= expression {recoverWhile=tag_recover}
+
+// ---------------------------------------------------------------- if
+
+if_statement ::= if_tag body elif_branch* else_branch? endif_tag {pin=1}
+if_tag ::= BLOCK_START (IF | IFASYNC) tag_expression BLOCK_END {pin=2 name="{% if %}"}
+elif_branch ::= elif_tag body {pin=1}
+elif_tag ::= BLOCK_START (ELIF | ELSEIF) tag_expression BLOCK_END {pin=2 name="{% elif %}"}
+else_branch ::= else_tag body {pin=1}
+else_tag ::= BLOCK_START ELSE BLOCK_END {pin=2 name="{% else %}"}
+endif_tag ::= BLOCK_START ENDIF BLOCK_END {pin=2 name="{% endif %}"}
+
+private tag_expression ::= expression {recoverWhile=tag_recover}
+
+// ---------------------------------------------------------------- for / asyncEach / asyncAll
+
+for_statement ::= for_tag body else_branch? endfor_tag {pin=1}
+for_tag ::= BLOCK_START (FOR | ASYNCEACH | ASYNCALL) for_header BLOCK_END {pin=2 name="{% for %}"}
+private for_header ::= loop_targets IN expression {pin=1 recoverWhile=tag_recover}
+private loop_targets ::= LPAREN target_list RPAREN | target_list
+private target_list ::= target_variable (COMMA target_variable)*
+endfor_tag ::= BLOCK_START (ENDFOR | ENDEACH | ENDALL) BLOCK_END {pin=2 name="{% endfor %}"}
+
+target_variable ::= IDENTIFIER {
+  implements="uk.steers.nunjucks.psi.NjkNamedElement"
+  mixin="uk.steers.nunjucks.psi.impl.NjkNamedElementMixin"
+}
+
+// ---------------------------------------------------------------- set
+
+set_statement ::= BLOCK_START SET set_targets set_rest {pin=2}
+private set_targets ::= target_list {recoverWhile=set_targets_recover}
+private set_targets_recover ::= !(ASSIGN | BLOCK_END | BLOCK_START | VAR_START | VAR_END | TEMPLATE_TEXT | COMMENT)
+private set_rest ::= set_assign_rest | set_block_rest
+private set_assign_rest ::= ASSIGN tag_expression BLOCK_END {pin=1}
+private set_block_rest ::= BLOCK_END body endset_tag {pin=1}
+endset_tag ::= BLOCK_START ENDSET BLOCK_END {pin=2 name="{% endset %}"}
+
+// ---------------------------------------------------------------- macro / call
+
+macro_statement ::= macro_tag body endmacro_tag {
+  pin=1
+  implements=["uk.steers.nunjucks.psi.NjkNamedElement" "uk.steers.nunjucks.psi.NjkStatement"]
+  mixin="uk.steers.nunjucks.psi.impl.NjkMacroMixin"
+}
+macro_tag ::= BLOCK_START MACRO macro_header BLOCK_END {pin=2 name="{% macro %}"}
+private macro_header ::= macro_name parameter_list? {pin=1 recoverWhile=tag_recover}
+macro_name ::= IDENTIFIER
+endmacro_tag ::= BLOCK_START ENDMACRO BLOCK_END {pin=2 name="{% endmacro %}"}
+
+parameter_list ::= LPAREN [parameter (COMMA parameter)* COMMA?] RPAREN {pin=1}
+parameter ::= IDENTIFIER [ASSIGN expression] {
+  implements="uk.steers.nunjucks.psi.NjkNamedElement"
+  mixin="uk.steers.nunjucks.psi.impl.NjkNamedElementMixin"
+}
+
+call_statement ::= call_tag body endcall_tag {pin=1}
+call_tag ::= BLOCK_START CALL call_header BLOCK_END {pin=2 name="{% call %}"}
+private call_header ::= parameter_list? expression {recoverWhile=tag_recover}
+endcall_tag ::= BLOCK_START ENDCALL BLOCK_END {pin=2 name="{% endcall %}"}
+
+// ---------------------------------------------------------------- filter block
+
+filter_statement ::= filter_tag body endfilter_tag {pin=1}
+filter_tag ::= BLOCK_START FILTER filter_header BLOCK_END {pin=2 name="{% filter %}"}
+private filter_header ::= filter_name argument_list? {pin=1 recoverWhile=tag_recover}
+endfilter_tag ::= BLOCK_START ENDFILTER BLOCK_END {pin=2 name="{% endfilter %}"}
+
+// ---------------------------------------------------------------- template inheritance / inclusion
+
+block_statement ::= block_tag body endblock_tag {
+  pin=1
+  implements=["uk.steers.nunjucks.psi.NjkNamedElement" "uk.steers.nunjucks.psi.NjkStatement"]
+  mixin="uk.steers.nunjucks.psi.impl.NjkBlockMixin"
+}
+block_tag ::= BLOCK_START BLOCK block_name BLOCK_END {pin=2 name="{% block %}"}
+block_name ::= IDENTIFIER {recoverWhile=tag_recover}
+endblock_tag ::= BLOCK_START ENDBLOCK end_block_name? BLOCK_END {pin=2 name="{% endblock %}"}
+end_block_name ::= IDENTIFIER {mixin="uk.steers.nunjucks.psi.impl.NjkEndBlockNameMixin"}
+
+extends_tag ::= BLOCK_START EXTENDS tag_expression BLOCK_END {pin=2 implements="uk.steers.nunjucks.psi.NjkTemplateReferencingTag"}
+include_tag ::= BLOCK_START INCLUDE include_body BLOCK_END {pin=2 implements="uk.steers.nunjucks.psi.NjkTemplateReferencingTag"}
+private include_body ::= expression ignore_missing? {recoverWhile=tag_recover}
+private ignore_missing ::= <<softIgnore>> <<softMissing>> {pin=1}
+
+import_tag ::= BLOCK_START IMPORT import_body BLOCK_END {pin=2 implements="uk.steers.nunjucks.psi.NjkTemplateReferencingTag"}
+private import_body ::= expression <<softAs>> import_alias context_modifier? {pin=2 recoverWhile=tag_recover}
+import_alias ::= IDENTIFIER {
+  implements="uk.steers.nunjucks.psi.NjkNamedElement"
+  mixin="uk.steers.nunjucks.psi.impl.NjkNamedElementMixin"
+}
+
+from_import_tag ::= BLOCK_START FROM from_import_body BLOCK_END {pin=2 implements="uk.steers.nunjucks.psi.NjkTemplateReferencingTag"}
+private from_import_body ::= expression <<softImport>> import_spec (COMMA import_spec)* context_modifier? {pin=2 recoverWhile=tag_recover}
+import_spec ::= imported_name [<<softAs>> import_alias]
+imported_name ::= IDENTIFIER {mixin="uk.steers.nunjucks.psi.impl.NjkImportedNameMixin"}
+
+private context_modifier ::= (<<softWith>> | <<softWithout>>) <<softContext>> {pin=1}
+
+// ---------------------------------------------------------------- raw / verbatim
+
+raw_statement ::= raw_tag TEMPLATE_TEXT* endraw_tag {pin=1}
+raw_tag ::= BLOCK_START (RAW | VERBATIM) BLOCK_END {pin=2 name="{% raw %}"}
+endraw_tag ::= BLOCK_START (ENDRAW | ENDVERBATIM) BLOCK_END {pin=2 name="{% endraw %}"}
+
+// ---------------------------------------------------------------- extension tags and stray closing tags
+
+custom_tag ::= BLOCK_START TAG_NAME <<skipTagContent>> BLOCK_END {pin=2}
+
+orphan_tag ::= BLOCK_START orphan_keyword <<skipTagContent>> BLOCK_END {pin=2}
+private orphan_keyword ::= ELIF | ELSEIF | ELSE | ENDIF | ENDFOR | ENDEACH | ENDALL | ENDSET | ENDMACRO
+  | ENDCALL | ENDFILTER | ENDBLOCK | ENDRAW | ENDVERBATIM
+
+// ---------------------------------------------------------------- expressions
+
+expression ::= conditional_expr
+  | or_expr
+  | and_expr
+  | not_expr
+  | in_expr
+  | is_expr
+  | compare_expr
+  | concat_expr
+  | add_group
+  | mul_group
+  | pow_expr
+  | unary_expr
+  | filter_expr
+  | postfix_group
+  | primary_group
+
+conditional_expr ::= expression IF expression [ELSE expression]
+or_expr ::= expression OR expression
+and_expr ::= expression AND expression
+not_expr ::= NOT expression
+in_expr ::= expression NOT? IN expression
+is_expr ::= expression IS NOT? expression
+compare_expr ::= expression compare_op expression
+private compare_op ::= EQEQEQ | NEQEQ | EQEQ | NEQ | LE | GE | LT | GT
+concat_expr ::= expression TILDE expression
+
+private add_group ::= plus_expr | minus_expr
+plus_expr ::= expression PLUS expression
+minus_expr ::= expression MINUS expression
+
+private mul_group ::= mul_expr | div_expr | floor_div_expr | mod_expr
+mul_expr ::= expression MUL expression
+div_expr ::= expression DIV expression
+floor_div_expr ::= expression FLOORDIV expression
+mod_expr ::= expression MOD expression
+
+pow_expr ::= expression POW expression
+unary_expr ::= (MINUS | PLUS) expression
+
+filter_expr ::= expression PIPE filter_name argument_list?
+filter_name ::= IDENTIFIER (DOT IDENTIFIER)* {mixin="uk.steers.nunjucks.psi.impl.NjkFilterNameMixin"}
+
+private postfix_group ::= call_expr | index_expr | member_expr
+call_expr ::= expression argument_list
+index_expr ::= expression LBRACKET slice_or_index RBRACKET
+private slice_or_index ::= [expression] COLON [expression] [COLON [expression]] | expression
+member_expr ::= expression DOT IDENTIFIER {mixin="uk.steers.nunjucks.psi.impl.NjkMemberExprMixin"}
+
+private primary_group ::= literal_expr
+  | reference_expr
+  | paren_expr
+  | array_expr
+  | dict_expr
+
+literal_expr ::= STRING | NUMBER | REGEX | TRUE | FALSE | NONE | NULL {
+  mixin="uk.steers.nunjucks.psi.impl.NjkLiteralMixin"
+}
+reference_expr ::= IDENTIFIER {mixin="uk.steers.nunjucks.psi.impl.NjkReferenceExprMixin"}
+paren_expr ::= LPAREN [expression (COMMA expression)* COMMA?] aggregate_close {pin=1}
+array_expr ::= LBRACKET [expression (COMMA expression)* COMMA?] aggregate_close {pin=1}
+dict_expr ::= LBRACE [dict_entry (COMMA dict_entry)* COMMA?] aggregate_close {pin=1}
+// nunjucks closes any aggregate on any closing bracket; mismatches are reported by an inspection
+private aggregate_close ::= RBRACE | RBRACKET | RPAREN
+dict_entry ::= dict_key COLON expression {pin=1}
+dict_key ::= IDENTIFIER | STRING | NUMBER
+
+argument_list ::= LPAREN [argument (COMMA argument)* COMMA?] RPAREN {pin=1}
+private argument ::= keyword_argument | expression
+keyword_argument ::= keyword_name ASSIGN expression {pin=2}
+keyword_name ::= IDENTIFIER {mixin="uk.steers.nunjucks.psi.impl.NjkKeywordNameMixin"}

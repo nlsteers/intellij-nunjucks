@@ -1,0 +1,26 @@
+{% if user.isAdmin %}
+  <p>Admin</p>
+{% elif user.isEditor %}
+  <p>Editor</p>
+{% elseif guest %}
+  <p>Guest</p>
+{% else %}
+  <p>Nobody</p>
+{% endif %}
+{% for item in items %}
+  <li>{{ loop.index }}: {{ item }}</li>
+{% else %}
+  <li>empty</li>
+{% endfor %}
+{% for key, value in { a: 1, "b-c": 2 } %}{{ key }}={{ value }}{% endfor %}
+{% asyncEach x in xs %}{{ x }}{% endeach %}
+{% asyncAll x in xs %}{{ x }}{% endall %}
+{% ifAsync ready %}ok{% endif %}
+{% set a = 1 %}
+{% set b, c = "x" %}
+{% set block %}
+  <b>captured</b>
+{% endset %}
+{% filter upper %}shout{% endfilter %}
+{% filter replace("a", "b") %}aaa{% endfilter %}
+{% customExtension foo "bar" 1 %}
