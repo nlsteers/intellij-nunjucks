@@ -15,3 +15,28 @@ jobs:
     concurrency:
       group: build-and-verify-main
     uses: ./.github/workflows/build-and-verify.yml
+
+  publish-latest:
+    name: Publish latest release
+    needs: build-and-verify
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    concurrency:
+      group: publish-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Download plugin
+        run: gh run download "$GITHUB_RUN_ID" --name plugin --dir dist
+
+      - name: Replace latest release
+        run: |
+          gh release delete latest --cleanup-tag --yes || true
+          gh release create latest dist/*.zip \
+            --target "$GITHUB_SHA" \
+            --title "Latest build" \
+            --notes "Built from ${GITHUB_SHA} on main." \
+            --latest
